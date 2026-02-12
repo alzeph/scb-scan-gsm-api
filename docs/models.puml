@@ -1,0 +1,84 @@
+@startuml Models_SCBS_GSM
+
+top to bottom direction
+skinparam linetype ortho
+' ============================================
+' SYSTÈME DE PERMISSIONS ET UTILISATEURS
+' ============================================
+
+class Permission #AA0000 {
+    +id: integer (PK)
+    +name: string (unique)
+    +content_type: string
+    +codename: string
+}
+
+class Group #AA0000 {
+    +id: integer (PK)
+    +name: string (unique)
+    +permissions: Permission
+}
+
+Group "0..*" o--{ "0..*" Permission : "contient >"
+
+class User #AA0000 {
+    +id: integer (PK)
+    +first_name: string
+    +last_name: string
+    +email: string (unique)
+    +password: string
+    +phone: string
+    +last_login: datetime
+    +is_staff: boolean
+    +is_active: boolean
+    +is_superuser: boolean
+    +user_permissions: Permission
+    +date_joined: datetime
+}
+
+User "0..*" o--{ "0..*" Permission : "possède >"
+User "0..*" o--{ "0..*" Group : "appartient à >"
+
+' ============================================
+' SCAN GSM
+' ============================================
+
+class CSVLine #0000FF {
+    +id: integer (PK)
+    +time: datetime
+    +lat: float
+    +lon: float
+    +alt: float
+    +gps_fix: integer
+    +rat: string
+    +mccmnc: string
+    +cell_id: integer
+    +pci: integer
+    +band: string
+    +earfcn: integer
+    +rsrp_dbm: integer
+    +rsrq_db: float
+    +sinr_db: float
+    +created_at: datetime
+    +updated_at: datetime
+}
+
+class GSMScan #0000FF {
+    +id: integer (PK)
+    +file: file
+    +created_at: datetime
+    +updated_at: datetime
+}
+
+GSMScan "0..*" o--{ "0..*" CSVLine : "contient >"
+
+class GSMData #0000FF {
+    +id: integer (PK)
+    +created_at: datetime
+    +updated_at: datetime
+}
+
+GSMData "0..*" o--{ "0..*" GSMScan : "possède >"
+GSMData "0..1" o-- "0..1" Group : "opérateur >"
+
+@enduml

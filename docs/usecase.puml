@@ -1,0 +1,63 @@
+@startuml USE_CASE_SCB_GSM
+
+top to bottom direction
+skinparam linetype ortho
+' ============================================
+' SYSTÈME DE PERMISSIONS ET UTILISATEURS
+' ============================================
+
+
+' ============================================
+' ACTEURS
+' ============================================
+actor "Operateur" as Operator
+actor "Administrateur" as Admin
+
+' ============================================
+' CAS D'UTILISATION
+' ============================================
+
+usecase "Se connecter" as UC_Login
+usecase "Exporter fichier CSV" as UC_ExportCSV
+usecase "Importer fichier CSV" as UC_ImportCSV
+usecase "Valider fichier CSV" as UC_ValidateCSV
+usecase "Créer objets CSVLine" as UC_CreateCSVLine
+usecase "Créer GSMScan" as UC_CreateGSMScan
+usecase "Créer GSMData (lié au Group)" as UC_CreateGSMData
+usecase "Gérer utilisateurs" as UC_ManageUsers
+usecase "Gérer groupes" as UC_ManageGroups
+usecase "Accéder interface admin" as UC_AdminInterface
+
+' ============================================
+' RELATIONS OPERATEUR
+' ============================================
+Operator --> UC_Login
+Operator --> UC_ExportCSV
+Operator --> UC_ImportCSV
+
+' Validation et création des objets liés à l'import CSV
+UC_ImportCSV --> UC_ValidateCSV : <<include>>
+UC_ValidateCSV --> UC_CreateCSVLine : <<include>>
+UC_CreateCSVLine --> UC_CreateGSMScan : <<include>>
+UC_CreateGSMScan --> UC_CreateGSMData : <<include>>
+
+' ============================================
+' RELATIONS ADMIN
+' ============================================
+Admin --> UC_Login
+Admin --> UC_ManageUsers
+Admin --> UC_ManageGroups
+Admin --> UC_AdminInterface
+
+' ============================================
+' NOTES
+' ============================================
+note right of UC_CreateGSMData
+    Un objet GSMData est créé automatiquement
+    pour chaque groupe d'opérateur existant
+end note
+
+note right of UC_CreateCSVLine
+    Chaque ligne du CSV devient un objet CSVLine
+    après validation du fichier
+end note
