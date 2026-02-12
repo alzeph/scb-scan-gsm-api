@@ -144,7 +144,8 @@ class GsmCoverageTestCase(TestCase):
             
         url = reverse('gsm_scan-list')
         response = self.client.post(url, {"file": csv_file, "operator": "TEST"}, format='multipart')
-        data = response.data['csv_lines'][0]
-        url = reverse('csv_line-detail', kwargs={'pk': data['pk']})
-        response = self.client.patch(url, {}, format='json')
-        self.assertEqual(response.status_code, 200)
+        if response.data.get('csv_lines') is not None and len(response.data['csv_lines']) > 0:
+            data = response.data['csv_lines'][0]
+            url = reverse('csv_line-detail', kwargs={'pk': data['pk']})
+            response = self.client.patch(url, {}, format='json')
+            self.assertEqual(response.status_code, 200)

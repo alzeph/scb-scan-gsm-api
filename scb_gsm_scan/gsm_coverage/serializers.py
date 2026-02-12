@@ -48,6 +48,7 @@ class GSMScanSerializer(serializers.ModelSerializer):
         - Vérifie l'extension CSV
         - Vérifie que le fichier est lisible
         - Vérifie que toutes les colonnes attendues sont présentes
+        - Nettoyage géographique, radio, cell_id et doublons
         """
         if not value.name.endswith('.csv'):
             raise serializers.ValidationError("Le fichier doit avoir l'extension .csv.")
@@ -71,10 +72,45 @@ class GSMScanSerializer(serializers.ModelSerializer):
                 f"Les colonnes suivantes sont manquantes dans le fichier CSV : {', '.join(missing_columns)}"
             )
 
-        # On stocke le dataframe pour l'utiliser dans create/update
+        # --- Nettoyage géographique ---
+        initial_count = len(df)
+        df = df[
+            df['gps_fix'] >= 1  # GPS valide
+        ]
+        df = df[
+            df['lat'].between(-90, 90) & df['lon'].between(-180, 180)
+        ]
+        df = df[~((df['lat'] == 0) & (df['lon'] == 0))]  # point (0,0)
+        geo_count = len(df)
+
+        # --- Nettoyage radio ---
+        df = df[
+            df['rsrp_dbm'].between(-200, -44)
+            # df['rsrq_db'].between(-20, -3) &
+            # df['sinr_db'].between(-10, 30)
+        ]
+        radio_count = len(df)
+
+        # --- Cell_id valide ---
+        df = df[df['cell_id'].notnull() & (df['cell_id'] > 0)]
+        cell_count = len(df)
+
+        # --- Suppression des points trop proches (5 m approx) ---
+        df = df.assign(
+            lat = df['lat'].round(5),
+            lon = df['lon'].round(5)
+        )
+        df = df.drop_duplicates(subset=['lat', 'lon', 'cell_id'])
+        final_count = len(df)
+
+        if final_count == 0:
+            raise serializers.ValidationError("Le nettoyage a supprimé toutes les lignes : vérifiez vos seuils et vos données CSV.")
+
+        # Stockage du dataframe nettoyé pour create/update
         self._csv_df = df
         return value
 
+    
     def create(self, validated_data):
         """
         Création d'un GSMScan et des lignes CSV associées.
