@@ -76,7 +76,7 @@ class GsmCoverageTestCase(TestCase):
         url = reverse('gsm_scan-list')
         response = self.client.post(url, {"file": csv_file, "operator": "TEST"}, format='multipart')
         self.assertEqual(response.status_code, 400)
-
+ 
     def test_update_gsmscan_failure(self):
         url = reverse('gsm_scan-detail', kwargs={'pk': "test"})
         response = self.client.patch(url, {}, format='json')
