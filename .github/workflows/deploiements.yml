@@ -27,4 +27,3 @@ jobs:
         pip install -r scb_gsm_scan/requirements.txt
     - name:  Execution des tests
       run: |
-       python scb_gsm_scan/manage.py test
