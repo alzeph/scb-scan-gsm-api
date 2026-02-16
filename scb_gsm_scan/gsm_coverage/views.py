@@ -17,6 +17,7 @@ class GSMScanViewSet(viewsets.ModelViewSet):
     serializer_class = GSMScanSerializer
     permission_classes = [permissions.IsAuthenticated]
     http_method_names = ['get', 'post', 'patch']
+    
 
 class CSVLineViewSet(viewsets.ModelViewSet):
     queryset = CSVLine.objects.all()

@@ -136,7 +136,7 @@ AUTH_USER_MODEL = 'auths.User'
 
 REST_FRAMEWORK = {
     "DEFAULT_AUTHENTICATION_CLASSES": (
-        "rest_framework_simplejwt.authentication.JWTAuthentication",
+        "auths.authentification.JWTAuthenticationFromCookie",
     ),
     'DEFAULT_SCHEMA_CLASS': 'drf_spectacular.openapi.AutoSchema',
     "DEFAULT_PERMISSION_CLASSES": ["rest_framework.permissions.IsAuthenticated"],
@@ -147,6 +147,15 @@ REST_FRAMEWORK = {
     "ALLOWED_VERSIONS": ["v1"],
 }
 
+from datetime import timedelta
+
+SIMPLE_JWT = {
+    "ACCESS_TOKEN_LIFETIME": timedelta(minutes=60*60*24),
+    "REFRESH_TOKEN_LIFETIME": timedelta(days=1),
+    "ROTATE_REFRESH_TOKENS": False,
+    "BLACKLIST_AFTER_ROTATION": True,
+}
+
 SPECTACULAR_SETTINGS = {
     'TITLE': 'SCB GSM Scan API',
     'DESCRIPTION': 'Description de l\'API SCB GSM Scan',
@@ -155,7 +164,7 @@ SPECTACULAR_SETTINGS = {
     'COMPONENT_SPLIT_REQUEST': True,  # sépare request/response pour les serializers
     'POSTPROCESSING_HOOKS': [],
     'SCHEMA_PATH_PREFIX': r'/api/',
-    # 'SCHEMA_PATH_PREFIX': r'/api/(users|contracts|staff-departments|staffs|timesheets|timesheetrows|type-submissions|submission-sheets|approvals|notification-submissions|departments|entreprises|images)',
+    'SCHEMA_PATH_PREFIX': r'/api/(auths|gsm_coverage|)/',
     'SCHEMA_PATH_PREFIX_TRIM': False,
 }
 

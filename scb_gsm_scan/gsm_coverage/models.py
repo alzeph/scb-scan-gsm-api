@@ -25,6 +25,8 @@ class CSVLine(TimeStamp):
     sinr_db = models.FloatField(null=True, blank=True)
     
     class Meta:
+        verbose_name = "Ligne CSV"
+        verbose_name_plural = "Lignes CSV"
         indexes = [
             models.Index(fields=["time"]),
             models.Index(fields=["cell_id"]),
@@ -41,6 +43,10 @@ class GSMScan(TimeStamp):
 
     def __str__(self):
         return self.file.name
+    
+    class Meta:
+        verbose_name = "Scan GSM"
+        verbose_name_plural = "Scans GSM"
 
 
 class GSMData(TimeStamp):
@@ -48,7 +54,7 @@ class GSMData(TimeStamp):
     gsm_scan = models.ManyToManyField(GSMScan)
     
     def __str__(self):
-        return self.operator
+        return self.operator.name
     
     @classmethod
     def get(cls, operator=None):
@@ -64,6 +70,12 @@ class GSMData(TimeStamp):
             serializers.ValidationError(str(e))
     
     class Meta:
+        verbose_name = "Donnée GSM"
+        verbose_name_plural = "Données GSM"
+        indexes = [
+            models.Index(fields=["operator"]),
+        ]
+        ordering = ["-created_at"]
         indexes = [
             models.Index(fields=["operator"]),
         ]

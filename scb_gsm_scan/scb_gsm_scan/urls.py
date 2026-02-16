@@ -2,7 +2,6 @@ from django.conf.urls.static import static
 from django.conf import settings
 from django.contrib import admin
 from rest_framework import permissions
-from rest_framework_simplejwt.views import TokenRefreshView, TokenObtainPairView
 from drf_spectacular.views import (
     SpectacularAPIView, SpectacularRedocView, SpectacularSwaggerView
 )
@@ -12,9 +11,7 @@ from gsm_coverage.urls import urlpatterns as urlpatterns_gsm
 
 url_app = [
     path('', include(urlpatterns_auths)),
-    path('', include(urlpatterns_gsm)),
-    path('auth/token/', TokenObtainPairView.as_view(), name='token_obtain_pair'),
-    path('auth/token/refresh/', TokenRefreshView.as_view(), name='token_refresh'),
+    path('', include(urlpatterns_gsm))
 ]
 
 urlpatterns = [

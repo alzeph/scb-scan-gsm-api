@@ -14,7 +14,8 @@ class AuthsTestCase(TestCase):
     def setUp(self):
         self.factory = ModelFactory(max_depth=7, create_m2m=True)
         kwargs_user = self.factory.build_create_kwargs(User)
-        self.user = User.objects.create(**kwargs_user)
+        kwargs_user.pop('email')
+        self.user = User.objects.create(email ="testmain@test.com", **kwargs_user)
         self.client = login_user_in_test(self.user)
         
     # test role
@@ -115,4 +116,17 @@ class AuthsTestCase(TestCase):
         response = self.client.patch(url, {'email': 'testupdate@test.com'}, format='json')
         self.assertEqual(response.status_code, 404)
        
+    def test_current_user_success(self):
+        url = reverse('user-current')
+        response = self.client.post(url, {'email': self.user.email}, format='json')
+        self.assertEqual(response.status_code, 200)
+        self.assertEqual(type(response.data), ReturnDict)
+        
+    
+    def test_session_check_success(self):
+        url = reverse('session_check')
+        response = self.client.get(url, format='json')
+        self.assertEqual(response.status_code, 200)
+        self.assertEqual(type(response.data), ReturnDict)
+    
         
