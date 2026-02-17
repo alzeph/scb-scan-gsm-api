@@ -3,6 +3,7 @@ from django.contrib.auth import get_user_model
 from django.contrib.auth.models import Group
 from gsm_coverage.models import GSMData, GSMScan, CSVLine
 from gsm_coverage.serializers import GSMDataSerializer, GSMScanSerializer, CSVLineSerializer
+from django_filters.rest_framework import DjangoFilterBackend
 
 
 class GSMDataViewSet(mixins.ListModelMixin, viewsets.GenericViewSet):
@@ -10,6 +11,8 @@ class GSMDataViewSet(mixins.ListModelMixin, viewsets.GenericViewSet):
     serializer_class = GSMDataSerializer
     permission_classes = [permissions.IsAuthenticated]
     pagination_class = None
+    filter_backends = [DjangoFilterBackend]
+    filterset_fields = ['operator'] 
     
     
 class GSMScanViewSet(viewsets.ModelViewSet):

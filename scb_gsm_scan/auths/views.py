@@ -1,9 +1,10 @@
 from drf_spectacular.utils import extend_schema, OpenApiResponse
-from rest_framework.decorators import api_view, permission_classes
-from rest_framework.decorators import action
+from rest_framework.decorators import api_view, permission_classes, action
+from rest_framework import status
 from rest_framework.response import Response
 from rest_framework_simplejwt.views import TokenObtainPairView, TokenRefreshView
 from rest_framework import viewsets, permissions, mixins, serializers
+from rest_framework_simplejwt.tokens import RefreshToken
 from django.contrib.auth import get_user_model
 from django.utils import timezone
 from auths.models import Role, Group
@@ -14,16 +15,16 @@ from auths.serializers import (
 
 User = get_user_model()
 
+
 class EmailSerializer(serializers.Serializer):
     email = serializers.EmailField()
-    
+
     def validate_email(self, email):
         if not email:
             raise serializers.ValidationError("L'email est obligatoire")
         if not User.objects.filter(email=email).exists():
             raise serializers.ValidationError("L'utilisateur n'existe pas")
         return email
-        
 
 
 class RoleViewSet(viewsets.ModelViewSet):
@@ -56,7 +57,7 @@ class UserViewSet(viewsets.ModelViewSet):
     serializer_class = UserSerializer
     permission_classes = [permissions.IsAuthenticated]
     http_method_names = ['get', 'post', 'patch', 'delete']
-    
+
     @extend_schema(
         methods=['post'],
         operation_id="get_current_user",
@@ -66,7 +67,7 @@ class UserViewSet(viewsets.ModelViewSet):
         request=EmailSerializer
     )
     @action(
-        detail=False, 
+        detail=False,
         methods=['post'],
         url_name='current',
         url_path=r'current'
@@ -76,7 +77,6 @@ class UserViewSet(viewsets.ModelViewSet):
         request_serializer.is_valid(raise_exception=True)
         serializer = self.get_serializer(request.user)
         return Response(serializer.data)
-    
 
 
 @extend_schema(
@@ -147,14 +147,14 @@ class CookieTokenObtainPairView(TokenObtainPairView):
 
         access = response.data.get("access")
         refresh = response.data.get("refresh")
-        
+
         try:
             user = User.objects.get(email=request.data.get("email"))
             user.last_login = timezone.now()
             user.save()
         except User.DoesNotExist:
             return response({"detail": "User not found"}, status=401)
-    
+
         response = Response(UserSerializer(user).data)
         response.set_cookie(
             key="access",
@@ -171,11 +171,12 @@ class CookieTokenObtainPairView(TokenObtainPairView):
             secure=True,
             samesite=None,
         )
-        
+
         return response
 
 
 @extend_schema(
+    operation_id="session_check",
     summary="Check session",
     description=(
         "Accès au token d’accès"
@@ -196,3 +197,31 @@ def session_check(request):
     # Si on arrive ici, le user est authentifié
     return Response(UserSerializer(request.user).data)
 
+
+@extend_schema(
+    summary="Logout",
+    operation_id="logout",
+    description=(
+        "Logout"
+    ),
+    responses={
+        204: OpenApiResponse(
+            description="Logout"
+        ),
+    },
+)
+@api_view(["POST"])
+@permission_classes([permissions.AllowAny])
+def logout(request):
+    try:
+        refresh = request.COOKIES.get("refresh")
+        if refresh:
+            token = RefreshToken(refresh)
+            token.blacklist()
+    except Exception:
+        pass
+
+    response = Response(status=status.HTTP_204_NO_CONTENT)
+    response.delete_cookie("access")
+    response.delete_cookie("refresh")
+    return response

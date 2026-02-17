@@ -81,7 +81,6 @@ class GSMScanSerializer(serializers.ModelSerializer):
             df['lat'].between(-90, 90) & df['lon'].between(-180, 180)
         ]
         df = df[~((df['lat'] == 0) & (df['lon'] == 0))]  # point (0,0)
-        geo_count = len(df)
 
         # --- Nettoyage radio ---
         df = df[
@@ -89,11 +88,9 @@ class GSMScanSerializer(serializers.ModelSerializer):
             # df['rsrq_db'].between(-20, -3) &
             # df['sinr_db'].between(-10, 30)
         ]
-        radio_count = len(df)
 
         # --- Cell_id valide ---
         df = df[df['cell_id'].notnull() & (df['cell_id'] > 0)]
-        cell_count = len(df)
 
         # --- Suppression des points trop proches (5 m approx) ---
         df = df.assign(
@@ -172,6 +169,8 @@ class GSMDataSerializer(serializers.ModelSerializer):
     Serializer pour GSMData.
     Les champs read_only assurent que seuls certains champs sont modifiables via l'API.
     """
+    
+    gsm_scan = GSMScanSerializer(many=True, read_only=True)
     class Meta:
         model = GSMData
         fields = ['operator', 'gsm_scan']

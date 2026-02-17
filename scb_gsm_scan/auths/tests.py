@@ -128,5 +128,11 @@ class AuthsTestCase(TestCase):
         response = self.client.get(url, format='json')
         self.assertEqual(response.status_code, 200)
         self.assertEqual(type(response.data), ReturnDict)
+        
+    def test_logout_success(self):
+        url = reverse('logout')
+        response = self.client.get(url, format='json')
+        self.assertEqual(response.status_code, 204)
+        self.assertEqual(type(response.data), ReturnDict)
     
         
