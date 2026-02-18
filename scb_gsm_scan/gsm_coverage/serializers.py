@@ -83,11 +83,11 @@ class GSMScanSerializer(serializers.ModelSerializer):
         df = df[~((df['lat'] == 0) & (df['lon'] == 0))]  # point (0,0)
 
         # --- Nettoyage radio ---
-        df = df[
-            df['rsrp_dbm'].between(-200, -44)
-            # df['rsrq_db'].between(-20, -3) &
-            # df['sinr_db'].between(-10, 30)
-        ]
+        # df = df[
+        #     df['rsrp_dbm'].between(-200, -44)
+        #     # df['rsrq_db'].between(-20, -3) &
+        #     # df['sinr_db'].between(-10, 30)
+        # ]
 
         # --- Cell_id valide ---
         df = df[df['cell_id'].notnull() & (df['cell_id'] > 0)]
